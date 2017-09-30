@@ -1,0 +1,73 @@
+image: registry.launchdock.io/reactioncommerce/helm-registry-agent:v0.7.3-helm_2.6
+
+variables:
+  CHART_NAME: launchdock
+  REGISTRY_CHART_URI:  ${REGISTRY_HOST}/${REGISTRY_CHART_ORG}/${CHART_NAME}
+
+build-branch:
+  stage: build
+  only:
+    - branches
+    - master
+  artifacts:
+    paths:
+    - ./*/Chart.yaml
+    expire_in: 1 week
+  script:
+  - export BRANCH_TAG=`echo $CI_COMMIT_REF_NAME | sed 's/_/-/g'`
+  - CHART_VER=0.0.1-${BRANCH_TAG} envsubst < build/Chart.yaml.in > ${CHART_NAME}/Chart.yaml
+
+test-branch:
+  stage: test
+  only:
+    - branches
+    - master
+  dependencies:
+  - build-branch
+  script:
+  - cat ${CHART_NAME}/Chart.yaml
+  - helm lint ${CHART_NAME}
+
+deploy-branch:
+  stage: deploy
+  only:
+    - branches
+    - master
+  dependencies:
+  - build-branch
+  script:
+  - helm registry login -u ${REGISTRY_USERNAME} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}
+  - cd ${CHART_NAME}
+  - helm registry push ${REGISTRY_CHART_URI} -c alpha
+
+build-tags:
+  stage: build
+  only:
+    - tags
+  artifacts:
+    paths:
+    - ./*/Chart.yaml
+    expire_in: 1 week
+  script:
+  - CHART_VER=${CI_COMMIT_TAG} envsubst < build/Chart.yaml.in > ${CHART_NAME}/Chart.yaml
+
+test-tags:
+  stage: test
+  only:
+    - tags
+  dependencies:
+  - build-tags
+  script:
+  - cat ${CHART_NAME}/Chart.yaml
+  - helm lint ${CHART_NAME}
+
+deploy-tags:
+  stage: deploy
+  only:
+    - tags
+  dependencies:
+  - build-tags
+  script:
+  - helm registry login -u ${REGISTRY_USERNAME} -p ${REGISTRY_PASSWORD} ${REGISTRY_HOST}
+  - cd ${CHART_NAME}
+  - helm registry push ${REGISTRY_CHART_URI} -c stable
