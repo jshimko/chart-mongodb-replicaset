@@ -1,7 +1,7 @@
 image: registry.launchdock.io/reactioncommerce/helm-registry-agent:v0.7.3-helm_2.6
 
 variables:
-  CHART_NAME: launchdock
+  CHART_NAME: mongodb-replicaset
   REGISTRY_CHART_URI:  ${REGISTRY_HOST}/${REGISTRY_CHART_ORG}/${CHART_NAME}
 
 build-branch:
