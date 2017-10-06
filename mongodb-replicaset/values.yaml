@@ -48,13 +48,13 @@ image:
 # Annotations to be added to MongoDB pods
 podAnnotations: {}
 
-resources: {}
-# limits:
-#   cpu: 100m
-#   memory: 512Mi
-# requests:
-#   cpu: 100m
-#   memory: 512Mi
+resources:
+  limits:
+    cpu: "1500m"
+    memory: "1536Mi"
+  requests:
+    cpu: "500m"
+    memory: "512Mi"
 
 persistentVolume:
   enabled: true
