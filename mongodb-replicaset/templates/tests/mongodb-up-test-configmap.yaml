@@ -6,7 +6,7 @@ metadata:
     chart: {{ .Chart.Name }}-{{ .Chart.Version }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
-  name: {{ template "mongodb-replicaset.fullname" . }}
+  name: {{ template "mongodb-replicaset.fullname" . }}-tests
 data:
-  mongod.conf: |
-{{ toYaml .Values.configmap | indent 4 }}
+  mongodb-up-test.sh: |-
+    {{ .Files.Get "mongodb-up-test.sh" }}

@@ -4,21 +4,28 @@ kind: Service
 metadata:
   annotations:
     service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
-  {{- if .Values.serviceAnnotations }}
+{{- if .Values.serviceAnnotations }}
 {{ toYaml .Values.serviceAnnotations | indent 4 }}
-  {{- end }}
+{{- end }}
   labels:
-    app: {{ template "name" . }}
+    app: {{ template "mongodb-replicaset.name" . }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version }}
     heritage: {{ .Release.Service }}
     release: {{ .Release.Name }}
-  name: {{ template "fullname" . }}
+{{- if .Values.metrics.enabled }}
+{{ toYaml .Values.metrics.serviceLabels | indent 4 }}
+{{- end }}
+  name: {{ template "mongodb-replicaset.fullname" . }}
 spec:
   type: ClusterIP
   clusterIP: None
   ports:
+{{- if .Values.metrics.enabled }}
+    - name: metrics
+      port: {{ .Values.metrics.port }}
+{{- end }}
     - name: peer
       port: {{ .Values.port }}
   selector:
-    app: {{ template "name" . }}
+    app: {{ template "mongodb-replicaset.name" . }}
     release: {{ .Release.Name }}
