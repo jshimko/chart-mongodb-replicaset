@@ -67,6 +67,29 @@ persistentVolume:
 # Annotations to be added to the service
 serviceAnnotations: {}
 
+scheduling:
+  affinity:
+    node:
+      type: requiredDuringSchedulingIgnoredDuringExecution
+      labels:
+      # - key: iamalabelkey
+      #   operator: In
+      #   values: ["value1", "value2"]
+  tolerations:
+  # - key: iamataintkey
+  #   value: taintvalue
+  #   effect: NoSchedule
+
+networkPolicy:
+  ingress:
+#    enabled: true
+#    namespaceLabels:
+#      - key: tenant
+#        value: customer1
+#    podLabels:
+#      - key: app
+#        value: frontend
+
 tls:
   # Enable or disable MongoDB TLS support
   enabled: false

@@ -161,18 +161,34 @@ spec:
               mountPath: /keydir
               readOnly: true
           {{- end }}
-      {{- if eq .Values.podAntiAffinity "hard" }}
       affinity:
+        {{- if .Values.scheduling.affinity }}
+        {{- if .Values.scheduling.affinity.node }}
+        {{- if .Values.scheduling.affinity.node.labels }}
+        nodeAffinity:
+          {{ .Values.scheduling.affinity.node.type }}:
+            nodeSelectorTerms:
+            - matchExpressions:
+                {{- range .Values.scheduling.affinity.node.labels }}
+                - key: {{ .key }}
+                  operator: {{ .operator }}
+                  values:
+                  {{- range .values }}
+                  - {{ . }}
+                  {{- end }}
+                {{- end }}
+        {{- end }}
+        {{- end }}
+        {{- end }}
         podAntiAffinity:
+          {{- if eq .Values.podAntiAffinity "hard" }}
           requiredDuringSchedulingIgnoredDuringExecution:
             - topologyKey: "kubernetes.io/hostname"
               labelSelector:
                 matchLabels:
                   app: "{{ template "mongodb-replicaset.name" . }}"
                   release: "{{ .Release.Name }}"
-      {{- else if eq .Values.podAntiAffinity "soft" }}
-      affinity:
-        podAntiAffinity:
+          {{- else if eq .Values.podAntiAffinity "soft" }}
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 1
               podAffinityTerm:
@@ -181,6 +197,15 @@ spec:
                   matchLabels:
                     app: "{{ template "mongodb-replicaset.name" . }}"
                     release: "{{ .Release.Name }}"
+          {{- end }}
+      {{- if .Values.scheduling.tolerations }}
+      tolerations:
+      {{- range .Values.scheduling.tolerations }}
+      - key: {{ .key }}
+        value: {{ .value }}
+        operator: Equal
+        effect: {{ .effect }}
+      {{- end }}
       {{- end }}
       volumes:
         - name: config
