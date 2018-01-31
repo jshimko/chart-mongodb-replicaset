@@ -20,6 +20,17 @@ jobs:
       - checkout
       - run: .circleci/lint.sh
 
+  # test the chart on minikube
+  test:
+    machine: true
+
+    environment:
+      CHART_DIR: mongodb-replicaset
+
+    steps:
+      - checkout
+      - run: .circleci/test.sh
+
   # build and deploy to S3 chart repo
   deploy:
     docker:
@@ -40,9 +51,14 @@ workflows:
           filters:
             tags:
               only: /.*/
+      - test:
+          filters:
+            tags:
+              only: /.*/
       - deploy:
           requires:
             - lint
+            - test
           filters:
             # only run deploy on tags with format: 1.2.3
             tags:
